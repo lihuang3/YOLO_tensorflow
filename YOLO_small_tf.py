@@ -2,7 +2,13 @@ import numpy as np
 import tensorflow as tf
 import cv2
 import time
-import sys
+import sys, os
+
+import matplotlib.pyplot as plt
+from glob import glob
+
+imageDir = "test/"
+
 
 class YOLO_TF:
 	fromfile = None
@@ -27,7 +33,10 @@ class YOLO_TF:
 	def __init__(self,argvs = []):
 		self.argv_parser(argvs)
 		self.build_networks()
-		if self.fromfile is not None: self.detect_from_file(self.fromfile)
+		if self.fromfile is not None:
+			# self.detect_from_file(self.fromfile)
+			for fn in os.listdir(imageDir):
+				self.detect_from_file(imageDir + fn)
 	def argv_parser(self,argvs):
 		for i in range(1,len(argvs),2):
 			if argvs[i] == '-fromfile' : self.fromfile = argvs[i+1]
@@ -222,8 +231,13 @@ class YOLO_TF:
 			if self.disp_console : print '    image file writed : ' + self.tofile_img
 			cv2.imwrite(self.tofile_img,img_cp)			
 		if self.imshow :
-			cv2.imshow('YOLO_small detection',img_cp)
-			cv2.waitKey(1)
+			cv2.imshow('YOLO_tiny detection',img_cp)
+			cv2.moveWindow('YOLO_tiny detection', 50, 200)
+
+			# plt.imshow(img_cp)
+			# plt.show()
+
+			cv2.waitKey(1000)
 		if self.filewrite_txt : 
 			if self.disp_console : print '    txt file writed : ' + self.tofile_txt
 			ftxt.close()

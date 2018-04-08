@@ -2,8 +2,13 @@ import numpy as np
 import tensorflow as tf
 import cv2
 import time
-import sys
+import sys, os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+import matplotlib.pyplot as plt
+from glob import glob
+
+imageDir = "test/"
 class YOLO_TF:
 	fromfile = None
 	tofile_img = 'test/output.jpg'
@@ -27,7 +32,9 @@ class YOLO_TF:
 	def __init__(self,argvs = []):
 		self.argv_parser(argvs)
 		self.build_networks()
-		if self.fromfile is not None: self.detect_from_file(self.fromfile)
+		if self.fromfile is not None:
+			for fn in os.listdir(imageDir):
+				self.detect_from_file(imageDir+fn)
 	def argv_parser(self,argvs):
 		for i in range(1,len(argvs),2):
 			if argvs[i] == '-fromfile' : self.fromfile = argvs[i+1]
@@ -97,7 +104,8 @@ class YOLO_TF:
 			inputs_processed = inputs
 		weight = tf.Variable(tf.truncated_normal([dim,hiddens], stddev=0.1))
 		biases = tf.Variable(tf.constant(0.1, shape=[hiddens]))	
-		if self.disp_console : print '    Layer  %d : Type = Full, Hidden = %d, Input dimension = %d, Flat = %d, Activation = %d' % (idx,hiddens,int(dim),int(flat),1-int(linear))	
+		if self.disp_console : print \
+			'    Layer  %d : Type = Full, Hidden = %d, Input dimension = %d, Flat = %d, Activation = %d' % (idx,hiddens,int(dim),int(flat),1-int(linear))
 		if linear : return tf.add(tf.matmul(inputs_processed,weight),biases,name=str(idx)+'_fc')
 		ip = tf.add(tf.matmul(inputs_processed,weight),biases)
 		return tf.maximum(self.alpha*ip,ip,name=str(idx)+'_fc')
@@ -210,7 +218,12 @@ class YOLO_TF:
 			cv2.imwrite(self.tofile_img,img_cp)			
 		if self.imshow :
 			cv2.imshow('YOLO_tiny detection',img_cp)
-			cv2.waitKey(1)
+			cv2.moveWindow('YOLO_tiny detection', 50, 200)
+
+			# plt.imshow(img_cp)
+			# plt.show()
+
+			cv2.waitKey(500)
 		if self.filewrite_txt : 
 			if self.disp_console : print '    txt file writed : ' + self.tofile_txt
 			ftxt.close()
@@ -230,7 +243,7 @@ class YOLO_TF:
 
 def main(argvs):
 	yolo = YOLO_TF(argvs)
-	cv2.waitKey(1000)
+	cv2.waitKey(5000)
 
 
 if __name__=='__main__':	
